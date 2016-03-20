@@ -33,16 +33,25 @@ instance (Functor f, Functor g, Functor h) =>
           Functor (Three f g h) where
   fmap f (Three fgha) = Three $ (fmap.fmap.fmap) f fgha
 
--- but notice that Compose already allows us to express arbitrarily nested types:
+-- but notice that Compose already allows us to express
+-- arbitrarily nested types:
 -- Compose
 
 instance Applicative Identity where
   pure a = Identity a
-  (Identity a) <*> (Identity b) = Identity ( a b )
+  Identity a <*> Identity b = Identity (a b)
 
-instance (Applicative f, Applicative g) => Applicative (Compose f g) where
+instance Applicative f => Applicative (One f) where
+  pure a = One $ pure a
+  One f <*> One a = One $ f <*> a
+
+instance (Applicative f, Applicative g) =>
+          Applicative (Compose f g) where
   pure :: a -> Compose f g a
-  pure a = Compose ()
+  pure    a =  Compose $ (pure.pure) a
 
-
+  (<*>) :: Compose f g (a -> b)
+        -> Compose f g a
+        -> Compose f g b
+  Compose f <*> Compose a = Compose $ (fmap (<*>) f) <*> a
 
