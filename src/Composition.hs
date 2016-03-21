@@ -62,3 +62,35 @@ instance (Foldable f, Foldable g) => Foldable (Compose f g) where
 instance (Traversable f, Traversable g) => Traversable (Compose f g) where
   traverse :: Applicative ap => (a -> ap b) -> Compose f g a -> ap (Compose f g b)
   traverse f (Compose a) = fmap Compose $ (traverse.traverse) f a
+
+-- has nothing to do with the above:
+
+class Bifunctor p where
+  {-# MINIMAL bimap | first , second #-}
+  bimap :: (a -> b) -> (c -> d) -> p a c -> p b d
+  bimap f g = first f . second g
+
+  first :: (a -> b) -> p a c -> p b c
+  first f = bimap f id
+
+  second :: (b -> c) -> p a b -> p a c
+  second f = bimap id f
+
+data Deux a b = Deux a b
+data Const a b = Const a
+data Drei a b c = Drei a b c
+data SuperDrei a b c = SuperDrei a b
+
+instance Bifunctor Deux where
+  first  f (Deux a b) = Deux (f a)   b
+  second f (Deux a b) = Deux    a (f b)
+
+instance Bifunctor Const where
+  bimap f _ (Const a) = Const (f a)
+
+instance Bifunctor (Drei a) where
+  bimap f g (Drei a b c) = Drei a (f b) (g c)
+
+instance Bifunctor (SuperDrei a) where
+  bimap f _ (SuperDrei a b) = SuperDrei a (f b)
+
