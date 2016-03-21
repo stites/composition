@@ -1,6 +1,8 @@
 {-# LANGUAGE InstanceSigs #-}
 module Composition where
 
+import Prelude hiding (Either(..))
+
 newtype Identity a =
   Identity { runIdentity :: a }
   deriving (Eq, Show)
@@ -80,6 +82,9 @@ data Deux a b = Deux a b
 data Const a b = Const a
 data Drei a b c = Drei a b c
 data SuperDrei a b c = SuperDrei a b
+data SemiDrei a b c = SemiDrei a
+data Quadriceps a b c d = Quadriceps a b c d
+data Either a b = Left a | Right b
 
 instance Bifunctor Deux where
   first  f (Deux a b) = Deux (f a)   b
@@ -93,4 +98,14 @@ instance Bifunctor (Drei a) where
 
 instance Bifunctor (SuperDrei a) where
   bimap f _ (SuperDrei a b) = SuperDrei a (f b)
+
+instance Bifunctor (SemiDrei a) where
+  bimap _ _ (SemiDrei a) = SemiDrei a
+
+instance Bifunctor (Quadriceps a b) where
+  bimap f g (Quadriceps a b c d) = Quadriceps a b (f c) (g d)
+
+instance Bifunctor Either where
+  bimap f _ (Left a)  = Left  (f a)
+  bimap _ g (Right b) = Right (g b)
 
