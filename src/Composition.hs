@@ -55,3 +55,10 @@ instance (Applicative f, Applicative g) =>
         -> Compose f g b
   Compose f <*> Compose a = Compose $ (fmap (<*>) f) <*> a
 
+instance (Foldable f, Foldable g) => Foldable (Compose f g) where
+  foldMap :: Monoid m => (a -> m) -> Compose f g a -> m
+  foldMap f (Compose a) = (foldMap.foldMap) f a
+
+instance (Traversable f, Traversable g) => Traversable (Compose f g) where
+  traverse :: Applicative ap => (a -> ap b) -> Compose f g a -> ap (Compose f g b)
+  traverse f (Compose a) = fmap Compose $ (traverse.traverse) f a
