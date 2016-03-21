@@ -109,3 +109,5 @@ instance Bifunctor Either where
   bimap f _ (Left a)  = Left  (f a)
   bimap _ g (Right b) = Right (g b)
 
+
+
