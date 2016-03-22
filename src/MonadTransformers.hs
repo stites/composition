@@ -84,9 +84,39 @@ instance Monad m => Monad (IdentityT m) where
   -- ^ notice that the second bind is from m to get ma to unwrap itself!
   -- ^ we have to run the identity because we f returns an IdentityT
   IdentityT ma >>= f = IdentityT $ ma >>= (runIdentityT . f)
+--IdentityT ma >>= f = let aInMonadB = fmap f ma :: m (IdentityT m b)
+--                     in ...doesn't work! we can't join the above!
+-- | we do know, however, that IdentityT is a monad, so we can runIdentityT for:
+--
+--IdentityT ma >>= f = let aInMonadB = fmap runIdentityT (fmap f ma) :: m (m b)
+--                     in ...closer!
+--
+--IdentityT ma >>= f = let aInMonadB :: m b
+--                         aInMonadB = join $ fmap runIdentityT (fmap f ma)
+--                     -- ...there, but we _actually_ want an `IdentityT m b`. Thus:
+--                     in IdentityT aInMonadB
+-- tada!
+
+-- let's refactor:
+--   IdentityT ma >>= f = IdentityT $ join $ fmap runIdentityT (fmap f ma)
+--
+-- functor law: fmap (f . g) == fmap f . fmap g
+--   IdentityT ma >>= f = IdentityT $ join $ fmap (runIdentityT . f) ma
+--
+-- join composed with fmap is >>=: x >>= f = join $ fmap f x
+--   IdentityT ma >>= f = IdentityT $ ma >>= runIdentityT . f
+--
+-- in the transformers library, this is:
+--   m >>= k = IdentityT $ runIdentityT . k =<< runIdentityT m
+
+-- Notice that the special sauce was in the fact that we required `runIdentityT`,
+-- which is, essentially, fmapping a fold of the ItentityT structure, and then
+-- we repacked the value into an IdentityT. This was to avoid the nested IdentityT!
+
 
 -- now we can do things like combine IdentityT with List!
--- IdentityT [1,2,3::Int] >>= (return . (+1))
+itWorks :: IdentityT [] Int
+itWorks = IdentityT [1,2,3::Int] >>= (return . (+1))
 
 
 
