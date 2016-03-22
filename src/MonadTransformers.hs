@@ -1,3 +1,5 @@
+{-# LANGUAGE InstanceSigs #-}
+
 module MonadTransformers where
 {-
 Monads are a problem! you can't compose them like you can with applicatives and functors! Otherwise you get stuff that looks like:
@@ -21,6 +23,70 @@ so we'd get something like:
 or, collapsing this down: f (g (f (g a))) -> f (g a)
 
 and there is no way to garuntee that we can `join` the final f and g. Thus, we must move to Monad Transformers.
+
+A monad transformer is a type constructor that takes a monad as an argument and returns a monad as a result. Since the problem with composing two monads lies in the fact that we can't `join` two unknown monads, we have to scope down our polymorphism to get concrete information about one of the moands that we're working with.
+
+We only need one monad to be concrete in order to perform the join and we can keep
+the second one as a polymorphic type argument. With this kind of strategy we can use
+monad transformers to account for two or more types that all have monad instances.
  -}
+
+{- applicative lets us apply functions of more than one argummment when we have structure so that we get things like this:
+
+fmap (+1) (Just 1)
+
+and turn them into
+(,,) <$> Just (1::Double) <*> Just "lol" <*> Just [1,2::Integer]
+
+likewise, we want to be able to handle multiple monads at a time, an example of this is a Reader and IO monad - which is common in web applications: IO, perhaps, for talking to a database, and Reader for the database connection(s) and/or HTTP request context. We want something like a "big bind"
+
+IO (Reader String [a])
+-}
+
+-- take 1:
+newtype MaybeIO a = MaybeIO { runMaybeIO :: IO (Maybe a) }
+
+newtype MaybeList a = MaybeList { runMaybeList :: [Maybe a] }
+
+-- monad transformers allow us not to do this one-off monad for every combination of types.
+
+-- starting simple:
+newtype Identity a =
+  Identity { runIdentity :: a }
+  deriving (Eq, Show)
+
+newtype IdentityT f a =
+  IdentityT { runIdentityT :: f a }
+  deriving (Eq, Show)
+
+instance Functor Identity where
+  fmap f (Identity a) = Identity (f a)
+
+instance Functor f => Functor (IdentityT f) where
+  fmap g (IdentityT fa) = IdentityT (fmap g fa)
+
+instance Applicative Identity where
+  pure = Identity
+  Identity f <*> Identity a = Identity (f a)
+
+instance Applicative m => Applicative (IdentityT m) where
+  pure a = IdentityT $ pure a
+  IdentityT fab <*> IdentityT fa = IdentityT (fab <*> fa)
+
+instance Monad Identity where
+  return = pure
+  (Identity a) >>= f = f a
+
+instance Monad m => Monad (IdentityT m) where
+  return = pure
+  (>>=) :: IdentityT m a -> (a -> IdentityT m b) -> IdentityT  m b
+  -- (>>=) (IdentityT ma)   (f                 ) = IdentityT $ ma >>= (runIdentityT . f)
+  -- ^ notice that the second bind is from m to get ma to unwrap itself!
+  -- ^ we have to run the identity because we f returns an IdentityT
+  IdentityT ma >>= f = IdentityT $ ma >>= (runIdentityT . f)
+
+-- now we can do things like combine IdentityT with List!
+-- IdentityT [1,2,3::Int] >>= (return . (+1))
+
 
 
