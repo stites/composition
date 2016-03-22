@@ -41,6 +41,14 @@ and turn them into
 likewise, we want to be able to handle multiple monads at a time, an example of this is a Reader and IO monad - which is common in web applications: IO, perhaps, for talking to a database, and Reader for the database connection(s) and/or HTTP request context. We want something like a "big bind"
 
 IO (Reader String [a])
+
+Use-case by type:
+we would want to apply some f to a monad with a nested g monad: f (g (f b))
+but the monadic bind can't join the types with the g in the middle. So we need to get
+to: f (f b), which means we need to fold the g in the middle, somehow. You can't do
+that with Monad, only; Monad, in essence, gives us join. So what we want to do is
+make monad concrete, fold the g out, and carry on with the operation. We can,
+however, keep the second monad polymorphic.
 -}
 
 -- take 1:
