@@ -19,5 +19,15 @@ instance Monad m => Monad (EitherT e m) where
       Left  x -> return (Left x)
       Right y -> runEitherT (f y)
 
+swapEither :: Either e a -> Either a e
+swapEither (Left  x) = Right x
+swapEither (Right x) = Left  x
+
+swapEitherT :: (Functor m) => EitherT e m a -> EitherT a m e
+swapEitherT ema = EitherT $ fmap swapEither (runEitherT ema)
+
+eitherT :: Monad m => (a -> m c) -> (b -> m c) -> EitherT a m b -> m c
+eitherT aToMC bToMC eamb = runEitherT eamb >>= either aToMC bToMC
+
 
 
