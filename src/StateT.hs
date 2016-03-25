@@ -20,4 +20,12 @@ instance Monad m => Applicative (StateT s m) where
     (fab, _) <- smab s
     return (fab a, s)
 
+instance Monad m => Monad (StateT s m) where
+  return = pure
+  (>>=) :: StateT s m a -> (a -> StateT s m b) -> StateT s m b
+  StateT sma >>= f = StateT $ \s -> do
+    (a, _) <- sma s
+    (b, _) <- runStateT (f a) s
+    return (b, s)
+
 
