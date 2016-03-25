@@ -28,4 +28,10 @@ instance Monad m => Monad (StateT s m) where
     (b, _) <- runStateT (f a) s
     return (b, s)
 
+-- now that we have a StateT, we can define our own parser type likeso:
+type Parser = StateT String Maybe
+-- they're similar, but not the same.
+
+-- keep in mind that we don't want to use ListT's or WriterT's
+
 
