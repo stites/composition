@@ -35,30 +35,31 @@ instance Monad (Maybe) where
 -- "Base Monad" is usually in reference to the outermost monad.
 -- type MyType a = IO [Maybe a]  has a base monad of IO.
 
-nested :: b -> Either String (Maybe Integer)
-nested = const (Right (Just 1))
+given :: b -> Either String (Maybe Integer)
+given = const (Right (Just 1))
 
 returnIO :: a -> IO a
 returnIO = return
 
 firstLayer :: ReaderT () IO (Either String (Maybe Integer))
-firstLayer = ReaderT $ fn $ nested
+firstLayer = ReaderT $ fn $ given
     where fn :: (() -> Either String (Maybe Integer)) -> () -> IO (Either String (Maybe Integer))
           fn f _ = returnIO $ f ()
 
 secondLayer :: MaybeT (ReaderT () IO) Integer
-secondLayer = MaybeT $ fn nested
+secondLayer = MaybeT $ fn given
     where fn :: (() -> Either String (Maybe Integer)) -> ReaderT () IO (Maybe Integer)
           fn f = case f () of
                    Right x -> ReaderT $ (const . returnIO) x
                    Left _  -> ReaderT $ (const . returnIO) Nothing
 
 thirdLayer :: MaybeT (ExceptT String (ReaderT () IO)) Integer
-thirdLayer = MaybeT $ fn $ nested
+thirdLayer = MaybeT $ fn $ given
     where fn :: (() -> Either String (Maybe Integer)) -> ExceptT String (ReaderT () IO) (Maybe Integer)
-          fn f = case f () of x -> ExceptT $ ReaderT $ (const . returnIO) x
+          fn = (ExceptT . ReaderT . const . returnIO . (\f -> f ()))
 
-
+reembedded :: MaybeT (ExceptT String (ReaderT () IO)) Integer
+reembedded = MaybeT . ExceptT . ReaderT . const . returnIO . (\f -> f ()) $ given
 
 
 
