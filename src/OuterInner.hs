@@ -59,7 +59,7 @@ thirdLayer = MaybeT $ fn $ given
           fn = (ExceptT . ReaderT . const . returnIO . (\f -> f ()))
 
 reembedded :: MaybeT (ExceptT String (ReaderT () IO)) Integer
-reembedded = MaybeT . ExceptT . ReaderT . const . returnIO . (\f -> f ()) $ given
+reembedded = MaybeT . ExceptT . ReaderT . const . returnIO . ($ ()) $ given
 
 
 
