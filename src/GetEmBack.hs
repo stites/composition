@@ -22,3 +22,4 @@ type Maybe    a = MaybeT    Identity a
 type Either e a = EitherT e Identity a
 type Reader r a = ReaderT r Identity a
 type State  s a = StateT  s Identity a
+
