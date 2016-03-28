@@ -2,6 +2,7 @@
 module MaybeT where
 
 import Control.Monad.Trans.Class
+import Control.Monad.IO.Class
 import Control.Monad
 
 newtype MaybeT m a =
@@ -25,5 +26,8 @@ instance Monad m => Monad (MaybeT m) where
 
 instance MonadTrans MaybeT where
   lift = MaybeT . liftM Just
+
+instance (MonadIO m) => MonadIO (MaybeT m) where
+  liftIO = MaybeT . liftM Just . liftIO
 
 

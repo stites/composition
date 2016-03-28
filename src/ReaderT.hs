@@ -2,6 +2,7 @@
 module ReaderT where
 
 import Control.Monad.Trans.Class
+import Control.Monad.IO.Class
 import Control.Monad
 
 -- this is just like Reader, but we get additional
@@ -27,6 +28,8 @@ instance Monad m => Monad (ReaderT r m) where
 instance MonadTrans (ReaderT r) where
   lift = ReaderT . const
 
+instance (MonadIO m) => MonadIO (ReaderT r m) where
+  liftIO = ReaderT . const . liftIO
 
 
 

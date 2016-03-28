@@ -130,7 +130,6 @@ instance Monad m => Monad (IdentityT m) where
 itWorks :: IdentityT [] Int
 itWorks = IdentityT [1,2,3::Int] >>= (return . (+1))
 
-
 instance MonadTrans IdentityT where
   lift = IdentityT
 

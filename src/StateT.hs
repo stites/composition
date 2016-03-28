@@ -2,6 +2,7 @@
 module StateT where
 
 import Control.Monad.Trans.Class
+import Control.Monad.IO.Class
 import Control.Monad
 
 import Data.Tuple (swap)
@@ -42,4 +43,8 @@ instance MonadTrans (StateT s) where
     v <- m -- get the value out of the monad
     return (v, s)
 
+instance (MonadIO m) => MonadIO (StateT s m) where
+  liftIO m = StateT $ \s -> do
+    v <- liftIO m
+    return (v, s)
 
