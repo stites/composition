@@ -1,6 +1,9 @@
 {-# LANGUAGE InstanceSigs #-}
 module MaybeT where
 
+import Control.Monad.Trans.Class
+import Control.Monad
+
 newtype MaybeT m a =
   MaybeT { runMaybeT :: m (Maybe a) }
 
@@ -20,5 +23,7 @@ instance Monad m => Monad (MaybeT m) where
       Nothing -> return Nothing
       Just y  -> runMaybeT (f y)
 
+instance MonadTrans MaybeT where
+  lift = MaybeT . liftM Just
 
 

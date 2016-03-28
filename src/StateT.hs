@@ -1,6 +1,9 @@
 {-# LANGUAGE InstanceSigs #-}
 module StateT where
 
+import Control.Monad.Trans.Class
+import Control.Monad
+
 import Data.Tuple (swap)
 -- the strict StateT
 
@@ -33,5 +36,10 @@ type Parser = StateT String Maybe
 -- they're similar, but not the same.
 
 -- keep in mind that we don't want to use ListT's or WriterT's
+
+instance MonadTrans (StateT s) where
+  lift m = StateT $ \s -> do
+    v <- m -- get the value out of the monad
+    return (v, s)
 
 

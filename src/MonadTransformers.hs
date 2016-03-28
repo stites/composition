@@ -1,6 +1,10 @@
 {-# LANGUAGE InstanceSigs #-}
 
 module MonadTransformers where
+
+import Control.Monad.Trans.Class
+import Control.Monad
+
 {-
 Monads are a problem! you can't compose them like you can with applicatives and functors! Otherwise you get stuff that looks like:
 
@@ -125,6 +129,10 @@ instance Monad m => Monad (IdentityT m) where
 -- now we can do things like combine IdentityT with List!
 itWorks :: IdentityT [] Int
 itWorks = IdentityT [1,2,3::Int] >>= (return . (+1))
+
+
+instance MonadTrans IdentityT where
+  lift = IdentityT
 
 
 

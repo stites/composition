@@ -1,6 +1,9 @@
 {-# LANGUAGE InstanceSigs #-}
 module ReaderT where
 
+import Control.Monad.Trans.Class
+import Control.Monad
+
 -- this is just like Reader, but we get additional
 -- structure for doing stuff!
 
@@ -21,7 +24,8 @@ instance Monad m => Monad (ReaderT r m) where
     a {-::a-} <- rma r {-::m a-}
     (runReaderT $ f a {-::ReaderT r m b-}) {-::r -> m b-} r
 
-
+instance MonadTrans (ReaderT r) where
+  lift = ReaderT . const
 
 
 

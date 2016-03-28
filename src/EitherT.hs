@@ -1,6 +1,9 @@
 {-# LANGUAGE InstanceSigs #-}
 module EitherT where
 
+import Control.Monad.Trans.Class
+import Control.Monad
+
 newtype EitherT e m a = EitherT { runEitherT :: m (Either e a) }
 
 instance Functor m => Functor (EitherT e m) where
@@ -29,5 +32,7 @@ swapEitherT ema = EitherT $ fmap swapEither (runEitherT ema)
 eitherT :: Monad m => (a -> m c) -> (b -> m c) -> EitherT a m b -> m c
 eitherT aToMC bToMC eamb = runEitherT eamb >>= either aToMC bToMC
 
+instance MonadTrans (EitherT e) where
+  lift = EitherT . liftM Right
 
 
